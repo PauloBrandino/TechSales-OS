@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { delay, tap } from 'rxjs/operators';
-import { PoC } from '../models/core.models';
+import { PoC, PoCStatus } from '../models/core.models';
 
 @Injectable({
   providedIn: 'root'
@@ -47,5 +47,11 @@ export class PocService {
 
   getPocByDealId(dealId: string): PoC | undefined {
     return this.pocs().find(p => p.deal_id === dealId);
+  }
+
+  updatePocStatus(id: string, status: PoCStatus) {
+    this.pocs.update(currentPocs =>
+      currentPocs.map(p => p.id === id ? { ...p, status } : p)
+    );
   }
 }
