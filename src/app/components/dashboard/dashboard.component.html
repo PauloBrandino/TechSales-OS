@@ -1,131 +1,95 @@
-<div class="p-4">
-  <div class="flex gap-2 mb-4">
-    <button
-      pButton
-      type="button"
-      label="Visão Comercial"
-      [class.p-button-outlined]="currentView() !== 'sales'"
-      (click)="setView('sales')">
-    </button>
-    <button
-      pButton
-      type="button"
-      label="Visão Técnica"
-      [class.p-button-outlined]="currentView() !== 'engineer'"
-      (click)="setView('engineer')">
-    </button>
-  </div>
+<div class="min-h-screen bg-gray-50">
+  <!-- Header Simples -->
+  <header class="bg-white shadow p-4 mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">TechSales OS</h1>
+  </header>
 
-  <!-- Sales View: Kanban Board -->
-  <div *ngIf="currentView() === 'sales'" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <!-- Qualification Column -->
-    <div class="bg-gray-100 p-4 rounded-lg">
-      <h3 class="text-lg font-bold mb-4 text-gray-700">Qualificação</h3>
-      <div class="flex flex-col gap-3">
-        <div *ngFor="let deal of qualificationDeals()"
-             class="bg-white p-4 rounded shadow border-l-4 border-blue-500 relative"
-             [class.border-red-500]="isDealBlocked(deal.id)"
-             [class.border-l-4]="!isDealBlocked(deal.id)"
-             [class.border]="isDealBlocked(deal.id)">
+  <div class="p-4 container mx-auto">
+    <p-tabView>
+      <!-- Visão Comercial -->
+      <p-tabPanel header="Comercial">
+        <div class="card bg-white rounded-lg shadow p-4">
+          <h2 class="text-xl font-semibold mb-4 text-gray-700">Oportunidades em Andamento</h2>
 
-          <div *ngIf="isDealBlocked(deal.id)" class="absolute top-2 right-2 text-red-500">
-            <i class="pi pi-exclamation-triangle"></i>
-          </div>
-
-          <h4 class="font-semibold">{{ deal.client_id }}</h4> <!-- Using ID as name placeholder -->
-          <p class="text-sm text-gray-600">Value: {{ formatCurrency(deal.value) }}</p>
+          <p-table [value]="deals()" [tableStyle]="{ 'min-width': '50rem' }">
+            <ng-template pTemplate="header">
+              <tr>
+                <th class="p-3 text-left">Cliente</th>
+                <th class="p-3 text-left">Valor</th>
+                <th class="p-3 text-left">Estágio</th>
+                <th class="p-3 text-left">Status PoC</th>
+                <th class="p-3 text-left">Ações</th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-deal>
+              <tr [class.bg-red-50]="deal.pocStatus === 'failed'">
+                <td class="p-3 font-medium">{{ deal.client }}</td>
+                <td class="p-3">{{ deal.value }}</td>
+                <td class="p-3">
+                  <p-tag [value]="deal.stage | uppercase" severity="info"></p-tag>
+                </td>
+                <td class="p-3">
+                  <p-tag
+                    [value]="deal.pocStatus | uppercase"
+                    [severity]="deal.pocStatus === 'success' ? 'success' : (deal.pocStatus === 'failed' ? 'danger' : 'warning')">
+                  </p-tag>
+                </td>
+                <td class="p-3">
+                  <div *ngIf="deal.pocStatus !== 'success'">
+                    <button
+                      pButton
+                      icon="pi pi-lock"
+                      label="Bloqueado"
+                      class="p-button-danger p-button-sm p-button-outlined"
+                      [disabled]="true">
+                    </button>
+                  </div>
+                  <div *ngIf="deal.pocStatus === 'success'">
+                    <button
+                      pButton
+                      icon="pi pi-arrow-right"
+                      label="Avançar"
+                      class="p-button-success p-button-sm">
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
         </div>
-      </div>
-    </div>
+      </p-tabPanel>
 
-    <!-- PoC Column -->
-    <div class="bg-gray-100 p-4 rounded-lg">
-      <h3 class="text-lg font-bold mb-4 text-gray-700">PoC</h3>
-      <div class="flex flex-col gap-3">
-        <div *ngFor="let deal of pocDeals()"
-             class="bg-white p-4 rounded shadow border-l-4 border-yellow-500 relative"
-             [class.border-red-500]="isDealBlocked(deal.id)"
-             [class.border-l-4]="!isDealBlocked(deal.id)"
-             [class.border]="isDealBlocked(deal.id)">
+      <!-- Visão Técnica -->
+      <p-tabPanel header="Técnica">
+        <div class="card bg-white rounded-lg shadow p-4">
+          <h2 class="text-xl font-semibold mb-4 text-gray-700">PoCs Ativas</h2>
 
-           <div *ngIf="isDealBlocked(deal.id)" class="absolute top-2 right-2 text-red-500" title="PoC Pending">
-            <i class="pi pi-exclamation-triangle"></i>
-          </div>
-
-          <h4 class="font-semibold">{{ deal.client_id }}</h4>
-          <p class="text-sm text-gray-600">Value: {{ formatCurrency(deal.value) }}</p>
+          <p-table [value]="deals()" [tableStyle]="{ 'min-width': '50rem' }">
+             <ng-template pTemplate="header">
+              <tr>
+                <th class="p-3 text-left">Cliente</th>
+                <th class="p-3 text-left">Status PoC</th>
+                <th class="p-3 text-left">Engenharia</th>
+              </tr>
+            </ng-template>
+             <ng-template pTemplate="body" let-deal>
+              <tr>
+                <td class="p-3 font-medium">{{ deal.client }}</td>
+                 <td class="p-3">
+                  <p-tag
+                    [value]="deal.pocStatus | uppercase"
+                    [severity]="deal.pocStatus === 'success' ? 'success' : (deal.pocStatus === 'failed' ? 'danger' : 'warning')">
+                  </p-tag>
+                </td>
+                <td class="p-3">
+                  <!-- Exemplo de ação técnica -->
+                  <span class="text-sm text-gray-500">Aguardando validação</span>
+                </td>
+              </tr>
+             </ng-template>
+          </p-table>
         </div>
-      </div>
-    </div>
-
-    <!-- Negotiation Column -->
-    <div class="bg-gray-100 p-4 rounded-lg">
-      <h3 class="text-lg font-bold mb-4 text-gray-700">Negociação</h3>
-      <div class="flex flex-col gap-3">
-        <div *ngFor="let deal of negotiationDeals()"
-             class="bg-white p-4 rounded shadow border-l-4 border-green-500 relative"
-             [class.border-red-500]="isDealBlocked(deal.id)"
-             [class.border-l-4]="!isDealBlocked(deal.id)"
-             [class.border]="isDealBlocked(deal.id)">
-
-          <div *ngIf="isDealBlocked(deal.id)" class="absolute top-2 right-2 text-red-500">
-            <i class="pi pi-exclamation-triangle"></i>
-          </div>
-
-          <h4 class="font-semibold">{{ deal.client_id }}</h4>
-          <p class="text-sm text-gray-600">Value: {{ formatCurrency(deal.value) }}</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Engineer View: PoC Table -->
-  <div *ngIf="currentView() === 'engineer'">
-    <p-table [value]="pocs()" [tableStyle]="{ 'min-width': '50rem' }">
-      <ng-template pTemplate="header">
-          <tr>
-              <th>Cliente (Deal ID)</th>
-              <th>Status</th>
-              <th>Prazo (Health)</th>
-              <th>Ações</th>
-          </tr>
-      </ng-template>
-      <ng-template pTemplate="body" let-poc>
-          <tr>
-              <td>{{ poc.deal_id }}</td>
-              <td>
-                <span [class.text-green-600]="poc.status === 'done'"
-                      [class.text-blue-600]="poc.status === 'in_progress'"
-                      class="font-medium uppercase text-sm">
-                  {{ poc.status }}
-                </span>
-              </td>
-              <td>
-                <span [class.bg-green-100]="poc.health === 'green'"
-                      [class.text-green-800]="poc.health === 'green'"
-                      [class.bg-yellow-100]="poc.health === 'yellow'"
-                      [class.text-yellow-800]="poc.health === 'yellow'"
-                      [class.bg-red-100]="poc.health === 'red'"
-                      [class.text-red-800]="poc.health === 'red'"
-                      class="px-2 py-1 rounded text-xs font-bold">
-                  {{ poc.health | uppercase }}
-                </span>
-              </td>
-              <td>
-                  <button
-                    *ngIf="poc.status !== 'done'"
-                    pButton
-                    type="button"
-                    label="Aprovar Técnica"
-                    class="p-button-sm p-button-success"
-                    (click)="approvePoc(poc.id)">
-                  </button>
-                  <span *ngIf="poc.status === 'done'" class="text-green-600 font-bold">
-                    <i class="pi pi-check"></i> Aprovado
-                  </span>
-              </td>
-          </tr>
-      </ng-template>
-    </p-table>
+      </p-tabPanel>
+    </p-tabView>
   </div>
 </div>
